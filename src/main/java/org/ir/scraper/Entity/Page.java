@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Page {
+public class Page{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -19,10 +19,24 @@ public class Page {
     @Column(length = 2048)
     private String url;
 
-    @Column(columnDefinition = "TEXT")
-    private String content;
-
     private String title;
-}
 
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    @Column(columnDefinition = "TEXT")
+    private String additionalText1;
+
+    @Column(columnDefinition = "TEXT")
+    private String additionalText2;
+
+    @Column(columnDefinition = "TEXT")
+    private String additionalText3;
+
+    @Column(columnDefinition = "TEXT")
+    private String categories;
+
+    @Column(columnDefinition = "TEXT")
+    private String classification;
+}
 

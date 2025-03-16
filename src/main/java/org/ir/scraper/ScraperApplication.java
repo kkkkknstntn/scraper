@@ -20,8 +20,8 @@ public class ScraperApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        String startUrl = "https://extinct-animals.fandom.com/ru/wiki/«Futabasaurus»"; // Replace with your starting URL
-        int maxPages = 50;
-        scraperService.scrape(startUrl, maxPages);
+        String startUrl = "https://extinct-animals.fandom.com/ru/wiki/Служебная:Все_страницы"; // Replace with your starting URL
+        int maxPages = 6000;
+//        scraperService.scrape(startUrl, maxPages);
     }
 }
