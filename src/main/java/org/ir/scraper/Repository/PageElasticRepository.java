@@ -20,14 +20,14 @@ public class PageElasticRepository {
     private ElasticsearchClient elasticsearchClient;
 
     public List<Page> searchByQuery(String query) throws IOException {
-        // Разбиваем запрос на первое слово и остальную часть
         String[] words = query.split("\\s+");
         String firstWord = words.length > 0 ? words[0] : "";
-        String remainingQuery = words.length > 1
-                ? String.join(" ", Arrays.copyOfRange(words, 1, words.length))
+        String secondWord = words.length > 1 ? words[1] : "";
+        String firstTwoWords = (firstWord + " " + secondWord).trim();
+        String remainingQuery = words.length > 2
+                ? String.join(" ", Arrays.copyOfRange(words, 2, words.length))
                 : "";
 
-        // Базовые запросы для полного запроса
         Query phraseQuery = MatchPhraseQuery.of(mp -> mp
                 .query(query)
                 .slop(3)
@@ -59,18 +59,31 @@ public class PageElasticRepository {
                 .boost(3.0f)
         )._toQuery();
 
-        // Условия для первого слова с повышенным приоритетом
         List<Query> shouldQueries = new ArrayList<>();
-        shouldQueries.add(phraseQuery);
-        shouldQueries.add(multiMatchQuery);
-        shouldQueries.add(synonymQuery);
+        if (!firstTwoWords.isEmpty()) {
+            Query firstTwoWordsPhraseQuery = MatchPhraseQuery.of(mp -> mp
+                    .query(firstTwoWords)
+                    .slop(0)
+                    .boost(25.0f)
+                    .field("title")
+            )._toQuery();
+
+            Query firstTwoWordsSlopQuery = MatchPhraseQuery.of(mp -> mp
+                    .query(firstTwoWords)
+                    .slop(2)
+                    .boost(20.0f)
+                    .field("title")
+            )._toQuery();
+
+            shouldQueries.add(firstTwoWordsPhraseQuery);
+            shouldQueries.add(firstTwoWordsSlopQuery);
+        }
 
         if (!firstWord.isEmpty()) {
-            // N-gram запрос для первого слова
             Query ngramQuery = MultiMatchQuery.of(m -> m
                     .query(firstWord)
                     .fields(
-                            "title.ngram^20",    // повышенный boost для n-gram
+                            "title.ngram^20",
                             "classification.ngram^18",
                             "categories.ngram^15",
                             "description.ngram^12",
@@ -79,14 +92,13 @@ public class PageElasticRepository {
                             "additionalText3.ngram^10"
                     )
                     .type(TextQueryType.BestFields)
-                    .boost(10.0f) // общий boost
+                    .boost(10.0f)
             )._toQuery();
 
-            // Высокоприоритетный запрос по первому слову
             Query firstWordBoostQuery = MultiMatchQuery.of(m -> m
                     .query(firstWord)
                     .fields(
-                            "title^15",    // Повышенный boost
+                            "title^15",
                             "classification^12",
                             "categories^9",
                             "description^6",
@@ -95,11 +107,10 @@ public class PageElasticRepository {
                             "additionalText3^3"
                     )
                     .type(TextQueryType.BestFields)
-                    .fuzziness("AUTO:4,7")
+                    .fuzziness("AUTO:1,3")
                     .boost(8.0f)
             )._toQuery();
 
-            // Точное совпадение первого слова
             Query exactFirstWordQuery = MatchQuery.of(m -> m
                     .query(firstWord)
                     .field("title.keyword")
@@ -111,7 +122,49 @@ public class PageElasticRepository {
             shouldQueries.add(exactFirstWordQuery);
         }
 
-        // Дополнительные условия для оставшейся части запроса
+        if (!secondWord.isEmpty()) {
+            Query secondWordNgramQuery = MultiMatchQuery.of(m -> m
+                    .query(secondWord)
+                    .fields(
+                            "title.ngram^10",
+                            "classification.ngram^8",
+                            "categories.ngram^6",
+                            "description.ngram^4",
+                            "additionalText1.ngram^3",
+                            "additionalText2.ngram^3",
+                            "additionalText3.ngram^3"
+                    )
+                    .type(TextQueryType.BestFields)
+                    .boost(5.0f)
+            )._toQuery();
+
+            Query secondWordBoostQuery = MultiMatchQuery.of(m -> m
+                    .query(secondWord)
+                    .fields(
+                            "title^8",
+                            "classification^6",
+                            "categories^4",
+                            "description^3",
+                            "additionalText1^2",
+                            "additionalText2^2",
+                            "additionalText3^2"
+                    )
+                    .type(TextQueryType.BestFields)
+                    .fuzziness("AUTO:1,3")
+                    .boost(4.0f)
+            )._toQuery();
+
+            Query exactSecondWordQuery = MatchQuery.of(m -> m
+                    .query(secondWord)
+                    .field("title.keyword")
+                    .boost(6.0f)
+            )._toQuery();
+
+            shouldQueries.add(secondWordNgramQuery);
+            shouldQueries.add(secondWordBoostQuery);
+            shouldQueries.add(exactSecondWordQuery);
+        }
+
         if (!remainingQuery.isEmpty()) {
             Query remainingPhraseQuery = MatchPhraseQuery.of(mp -> mp
                     .query(remainingQuery)
@@ -138,12 +191,14 @@ public class PageElasticRepository {
             shouldQueries.add(remainingMultiMatch);
         }
 
-        // Объединяем все условия
+        shouldQueries.add(synonymQuery);
+        shouldQueries.add(multiMatchQuery);
+        shouldQueries.add(phraseQuery);
+
         Query combinedQuery = BoolQuery.of(b -> b
                 .should(shouldQueries)
         )._toQuery();
 
-        // Выполняем поиск
         SearchRequest searchRequest = SearchRequest.of(s -> s
                 .index("new_pages_index")
                 .query(combinedQuery)
