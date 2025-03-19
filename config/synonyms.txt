@@ -969,7 +969,6 @@ Petalichthyida, петалихтииды
 primordialis, энтелогнат
 Mesacanthus, мезакант
 Pterichthyodes, птерихтиоид
-Mammuthus, южный мамонт
 candelariensis, гуаибазавр
 Eoraptor, Eoraptor Eoraptor, эораптор
 Thecodontosaurus, текодонтозавр
@@ -1109,7 +1108,6 @@ Araripesuchus, арарипезух
 Archeria, арчерия
 Grallator, граллатор
 Gomphotherium, гомфотерий
-Mammuthus, императорский мамонт
 Goniopholis, гониофолис
 Myllokunmingia, Myllokunmingiidae Myllokunmingia, миллокунминджия
 Shokawa, Shokawa Shokawa, шокава

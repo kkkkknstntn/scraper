@@ -1,3 +1,4 @@
+
 PUT /new_pages_index
 {
   "settings": {
@@ -9,7 +10,7 @@ PUT /new_pages_index
         },
         "custom_stopwords": {
           "type": "stop",
-          "stopwords": ["назад", "вымершие животные"]
+          "stopwords": ["вымершие животные"]
         },
         "english_stop": {
           "type": "stop",
