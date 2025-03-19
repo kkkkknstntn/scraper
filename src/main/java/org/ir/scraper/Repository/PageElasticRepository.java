@@ -64,14 +64,14 @@ public class PageElasticRepository {
             Query firstTwoWordsPhraseQuery = MatchPhraseQuery.of(mp -> mp
                     .query(firstTwoWords)
                     .slop(0)
-                    .boost(25.0f)
+                    .boost(40.0f)
                     .field("title")
             )._toQuery();
 
             Query firstTwoWordsSlopQuery = MatchPhraseQuery.of(mp -> mp
                     .query(firstTwoWords)
                     .slop(2)
-                    .boost(20.0f)
+                    .boost(30.0f)
                     .field("title")
             )._toQuery();
 
@@ -107,7 +107,7 @@ public class PageElasticRepository {
                             "additionalText3^3"
                     )
                     .type(TextQueryType.BestFields)
-                    .fuzziness("AUTO:1,3")
+                    .fuzziness("AUTO:4,7")
                     .boost(8.0f)
             )._toQuery();
 
@@ -123,34 +123,34 @@ public class PageElasticRepository {
         }
 
         if (!secondWord.isEmpty()) {
-            Query secondWordNgramQuery = MultiMatchQuery.of(m -> m
-                    .query(secondWord)
-                    .fields(
-                            "title.ngram^10",
-                            "classification.ngram^8",
-                            "categories.ngram^6",
-                            "description.ngram^4",
-                            "additionalText1.ngram^3",
-                            "additionalText2.ngram^3",
-                            "additionalText3.ngram^3"
-                    )
-                    .type(TextQueryType.BestFields)
-                    .boost(5.0f)
-            )._toQuery();
+//            Query secondWordNgramQuery = MultiMatchQuery.of(m -> m
+//                    .query(secondWord)
+//                    .fields(
+//                            "title.ngram^3",
+//                            "classification.ngram^4",
+//                            "categories.ngram^4",
+//                            "description.ngram^3",
+//                            "additionalText1.ngram^3",
+//                            "additionalText2.ngram^2",
+//                            "additionalText3.ngram^2"
+//                    )
+//                    .type(TextQueryType.BestFields)
+//                    .boost(5.0f)
+//            )._toQuery();
 
             Query secondWordBoostQuery = MultiMatchQuery.of(m -> m
                     .query(secondWord)
                     .fields(
-                            "title^8",
-                            "classification^6",
+                            "title^5",
+                            "classification^3",
                             "categories^4",
-                            "description^3",
-                            "additionalText1^2",
+                            "description^10",
+                            "additionalText1^3",
                             "additionalText2^2",
                             "additionalText3^2"
                     )
                     .type(TextQueryType.BestFields)
-                    .fuzziness("AUTO:1,3")
+                    .fuzziness("AUTO:4,7")
                     .boost(4.0f)
             )._toQuery();
 
@@ -160,7 +160,7 @@ public class PageElasticRepository {
                     .boost(6.0f)
             )._toQuery();
 
-            shouldQueries.add(secondWordNgramQuery);
+//            shouldQueries.add(secondWordNgramQuery);
             shouldQueries.add(secondWordBoostQuery);
             shouldQueries.add(exactSecondWordQuery);
         }
@@ -191,9 +191,9 @@ public class PageElasticRepository {
             shouldQueries.add(remainingMultiMatch);
         }
 
-        shouldQueries.add(synonymQuery);
-        shouldQueries.add(multiMatchQuery);
-        shouldQueries.add(phraseQuery);
+//        shouldQueries.add(synonymQuery);
+//        shouldQueries.add(multiMatchQuery);
+//        shouldQueries.add(phraseQuery);
 
         Query combinedQuery = BoolQuery.of(b -> b
                 .should(shouldQueries)
