@@ -64,14 +64,14 @@ public class PageElasticRepository {
             Query firstTwoWordsPhraseQuery = MatchPhraseQuery.of(mp -> mp
                     .query(firstTwoWords)
                     .slop(0)
-                    .boost(40.0f)
+                    .boost(25.0f)
                     .field("title")
             )._toQuery();
 
             Query firstTwoWordsSlopQuery = MatchPhraseQuery.of(mp -> mp
                     .query(firstTwoWords)
                     .slop(2)
-                    .boost(30.0f)
+                    .boost(20.0f)
                     .field("title")
             )._toQuery();
 
@@ -83,13 +83,13 @@ public class PageElasticRepository {
             Query ngramQuery = MultiMatchQuery.of(m -> m
                     .query(firstWord)
                     .fields(
-                            "title.ngram^20",
-                            "classification.ngram^18",
-                            "categories.ngram^15",
-                            "description.ngram^12",
-                            "additionalText1.ngram^10",
-                            "additionalText2.ngram^10",
-                            "additionalText3.ngram^10"
+                            "title.ngram^10",
+                            "classification.ngram^8",
+                            "categories.ngram^10",
+                            "description.ngram^8",
+                            "additionalText1.ngram^6",
+                            "additionalText2.ngram^6",
+                            "additionalText3.ngram^6"
                     )
                     .type(TextQueryType.BestFields)
                     .boost(10.0f)
@@ -100,7 +100,7 @@ public class PageElasticRepository {
                     .fields(
                             "title^15",
                             "classification^12",
-                            "categories^9",
+                            "categories^12",
                             "description^6",
                             "additionalText1^3",
                             "additionalText2^3",
